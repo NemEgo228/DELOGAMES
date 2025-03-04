@@ -85,18 +85,12 @@
       height: 40px;
     }
 
-    /******************************************
-     *  БЛОК "ДЕЛО ЭШЛИ ДЖОНСОН. ИНСТРУКЦИЯ"  *
-     ******************************************/
-    .case-title {
-      text-align: center;
+    /*************************************************************
+     *  БЛОК "ДЕЛО ЭШЛИ ДЖОНСОН" + ГОЛОСОВОЕ СООБЩЕНИЕ ВМЕСТЕ    *
+     *************************************************************/
+    .audio-case-block h2 {
       font-size: 1.2rem;
-    }
-
-    /****************************************
-     *   ГОЛОСОВОЕ СООБЩЕНИЕ (ИНСТРУКЦИЯ)   *
-     ****************************************/
-    .audio-block {
+      margin-bottom: 15px;
       text-align: center;
     }
     #audioPlayer {
@@ -108,7 +102,7 @@
      *   ОСНОВНОЙ КОНТЕНТ: ПОИСК + РЕЗУЛЬТАТ     *
      *********************************************/
     .main-content {
-      display: none; /* скрыт до нажатия на "Прослушать" */
+      display: none; /* скрыт до первого открытия аудио */
     }
 
     /* Поисковый блок (sticky) */
@@ -152,22 +146,16 @@
       </div>
     </div>
 
-    <!-- Дело Эшли Джонсон. Инструкция -->
-    <div class="block case-title">
-      Дело Эшли Джонсон. Инструкция
-    </div>
-
-    <!-- Голосовое сообщение -->
-    <div class="block audio-block">
-      <button id="startAudioBtn" class="btn">
-        Прослушать голосовое сообщение
-      </button>
+    <!-- Один блок: "Дело Эшли Джонсон" + голосовое сообщение -->
+    <div class="block audio-case-block" id="audioCaseBlock">
+      <h2>Дело Эшли Джонсон</h2>
+      <button id="toggleAudioBtn" class="btn">Прослушать инструктаж</button>
       <div id="audioPlayer">
         <audio id="voiceMessage" controls src="voice.mp3"></audio>
       </div>
     </div>
 
-    <!-- Основная часть: поиск + результат (появляется после нажатия "Прослушать") -->
+    <!-- Основная часть: поиск + результат (появляется после открытия аудио в первый раз) -->
     <div class="main-content" id="mainContent">
       <!-- Поисковый блок (sticky) -->
       <div class="block search-block">
@@ -186,19 +174,28 @@
   <script>
     let csvData = new Map();
     let isCSVLoaded = false;
+    let firstCodeEntered = false;
 
-    // При нажатии на кнопку "Прослушать голосовое сообщение"
-    document.getElementById("startAudioBtn").addEventListener("click", () => {
-      document.getElementById("startAudioBtn").style.display = "none";
-      document.getElementById("audioPlayer").style.display = "block";
+    // Кнопка, открывающая/закрывающая аудио
+    document.getElementById("toggleAudioBtn").addEventListener("click", () => {
+      const audioPlayer = document.getElementById("audioPlayer");
       const voiceMessage = document.getElementById("voiceMessage");
-      voiceMessage.play().catch(e => console.warn("Автовоспроизведение не поддерживается:", e));
-      document.getElementById("mainContent").style.display = "block";
 
-      // Загружаем CSV (если ещё не загружали)
-      if (!isCSVLoaded) {
-        loadCSV();
-        isCSVLoaded = true;
+      // Если аудио скрыто, показываем и запускаем воспроизведение
+      if (audioPlayer.style.display === "none") {
+        audioPlayer.style.display = "block";
+        voiceMessage.play().catch(e => console.warn("Автовоспроизведение не поддерживается:", e));
+
+        // При первом открытии — показать основной контент и загрузить CSV
+        if (!isCSVLoaded) {
+          document.getElementById("mainContent").style.display = "block";
+          loadCSV();
+          isCSVLoaded = true;
+        }
+      } else {
+        // Иначе сворачиваем и ставим на паузу
+        audioPlayer.style.display = "none";
+        voiceMessage.pause();
       }
     });
 
@@ -223,7 +220,7 @@
         });
     }
 
-    // Парсинг CSV: столбцы A (код), B (текст), C (файл-иллюстрация), D (заметки, игнорируем)
+    // Парсинг CSV: столбцы A(код), B(текст), C(файл), D(заметки, игнорируем)
     function parseCSV(text) {
       csvData.clear();
       let rows = [];
@@ -262,21 +259,18 @@
       }
 
       rows.forEach(r => {
-        // Минимум 2 столбца нужно (код и текст).
-        // Если есть 3-й столбец — это файл, 4-й столбец (заметки) игнорируем.
         if (r.length >= 2) {
           let code = r[0].trim().toLowerCase();   // столбец A
           let textB = r[1].trim();               // столбец B
-          let fileC = (r[2] || "").trim();       // столбец C (если нет, будет "")
-          // столбец D (r[3]) пропускаем
+          let fileC = (r[2] || "").trim();       // столбец C
+          // столбец D (r[3]) игнорируем
 
-          // Если в столбце C есть название файла, добавим <img> в конец текста
+          // Если в столбце C есть имя файла, добавим <img> в конец текста
           let finalText = textB;
           if (fileC) {
             finalText += `\n\n<img src="${fileC}" alt="иллюстрация" />`;
           }
 
-          // Сохраняем результат в Map
           csvData.set(code, finalText);
         }
       });
@@ -296,17 +290,19 @@
         return;
       }
 
-      // Ищем текст по ключу (код)
       const result = csvData.get(query) || "Информация не найдена.";
-      resultElement.textContent = result;
-
-      // Если в тексте есть тег <img>, мы можем его «преобразовать» (т. е. отобразить как HTML).
-      // Но по умолчанию innerText выведет теги как текст. Чтобы отобразить изображение,
-      // заменим innerText на innerHTML:
+      // Покажем переносы строк и теги <img> как HTML
       resultElement.innerHTML = result.replace(/\n/g, '<br>');
+
+      // После первого введённого кода сворачиваем аудио (чтобы остался только заголовок)
+      if (!firstCodeEntered) {
+        firstCodeEntered = true;
+        const audioPlayer = document.getElementById("audioPlayer");
+        const voiceMessage = document.getElementById("voiceMessage");
+        audioPlayer.style.display = "none";
+        voiceMessage.pause();
+      }
     }
   </script>
 </body>
 </html>
-
-

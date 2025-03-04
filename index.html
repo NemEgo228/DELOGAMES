@@ -189,7 +189,6 @@
 
     // Обработчик кнопки "Слушать инструктаж снова"
     document.getElementById("relistenBtn").addEventListener("click", () => {
-      // Показываем аудиоплеер и скрываем кнопку повторного прослушивания
       document.getElementById("audioPlayer").style.display = "block";
       document.getElementById("relistenBtn").style.display = "none";
       const voiceMessage = document.getElementById("voiceMessage");
@@ -262,29 +261,49 @@
     // Поиск по коду
     function searchCSV() {
       const query = document.getElementById("query").value.trim().toLowerCase();
-      const resultElement = document.getElementById("result");
+      const resultBlock = document.getElementById("resultBlock");
+
       if (!query) {
-        resultElement.textContent = "Пожалуйста, введите код.";
+        document.getElementById("result").textContent = "Пожалуйста, введите код.";
         return;
       }
+
+      // Если введён код JM2 - показываем кастомное окно с голосовым сообщением
+      if (query === "jm2") {
+        resultBlock.style.display = "block";
+        resultBlock.innerHTML = `
+          <div class="audio-case-block" id="audioCaseBlock2">
+            <h2>Инструктаж №2</h2>
+            <button id="listenBtn2" class="btn">Прослушать инструктаж №2</button>
+            <div id="audioPlayer2" style="display: none; margin-top: 15px;">
+              <audio id="voiceMessage2" controls src="voice2.mp3"></audio>
+            </div>
+          </div>
+        `;
+        document.getElementById("resultBlock").scrollIntoView({ behavior: "smooth" });
+        document.getElementById("listenBtn2").addEventListener("click", function() {
+          this.style.display = "none";
+          document.getElementById("audioPlayer2").style.display = "block";
+          const voiceMessage2 = document.getElementById("voiceMessage2");
+          voiceMessage2.play().catch(e => console.warn("Автовоспроизведение не поддерживается:", e));
+        });
+        return;
+      }
+
+      // Стандартная обработка для остальных кодов
       if (csvData.size === 0) {
-        resultElement.textContent = "CSV-файл не загружен или пуст.";
+        document.getElementById("result").textContent = "CSV-файл не загружен или пуст.";
         return;
       }
       const result = csvData.get(query) || "Информация не найдена.";
-      resultElement.textContent = result;
-      // Показываем блок результата, если он скрыт
-      document.getElementById("resultBlock").style.display = "block";
+      document.getElementById("result").textContent = result;
+      resultBlock.style.display = "block";
+      resultBlock.scrollIntoView({ behavior: "smooth" });
 
-      // Добавлено: прокрутка к началу блока результата после нажатия "Искать"
-      document.getElementById("resultBlock").scrollIntoView({ behavior: "smooth" });
-      
-      // После первого ввода кода скрываем аудио-плеер и кнопки инструктажа
       if (!firstCodeEntered) {
         firstCodeEntered = true;
         document.getElementById("audioPlayer").style.display = "none";
         document.getElementById("listenBtn").style.display = "none";
-        // Показываем кнопку повторного прослушивания
         document.getElementById("relistenBtn").style.display = "inline-block";
         const voiceMessage = document.getElementById("voiceMessage");
         voiceMessage.pause();
@@ -293,3 +312,4 @@
   </script>
 </body>
 </html>
+

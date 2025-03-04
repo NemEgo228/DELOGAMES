@@ -275,6 +275,10 @@
       resultElement.textContent = result;
       // Показываем блок результата, если он скрыт
       document.getElementById("resultBlock").style.display = "block";
+
+      // Добавлено: прокрутка к началу блока результата после нажатия "Искать"
+      document.getElementById("resultBlock").scrollIntoView({ behavior: "smooth" });
+      
       // После первого ввода кода скрываем аудио-плеер и кнопки инструктажа
       if (!firstCodeEntered) {
         firstCodeEntered = true;

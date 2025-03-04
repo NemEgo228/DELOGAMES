@@ -11,34 +11,30 @@
       margin: 0;
       padding: 0;
     }
-
     body {
       font-family: 'Roboto', sans-serif;
-      background-image: url('background.jpg');
+      background: url('background.jpg') no-repeat fixed;
       background-size: cover;
       background-position: center;
-      background-color: #1e1e1e; /* запасной цвет, если фон не загрузится */
+      background-color: #1e1e1e; /* запасной цвет */
       color: #fff;
       line-height: 1.5;
     }
-
     .page-wrapper {
       max-width: 800px;
       margin: 0 auto;
       padding: 20px;
     }
-
     /**********************************************
      *  ЕДИНЫЙ СТИЛЬ ДЛЯ ПОЛУПРОЗРАЧНЫХ БЛОКОВ   *
      **********************************************/
     .block {
-      background: rgba(0, 0, 0, 0.8);    /* более тёмная подложка */
+      background: rgba(0, 0, 0, 0.8); /* более тёмная подложка */
       border-radius: 12px;
       padding: 20px;
       margin-bottom: 20px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     }
-
     /***********************************
      *   СТИЛИ ДЛЯ КНОПОК И ПОЛЕЙ     *
      ***********************************/
@@ -56,7 +52,6 @@
     .btn:hover {
       background-color: #777;
     }
-
     .input-text {
       flex: 1;
       min-width: 200px;
@@ -65,10 +60,9 @@
       border-radius: 20px;
       font-size: 1rem;
       outline: none;
-      background-color: #333; /* тёмный фон поля ввода */
-      color: #fff;            /* белый текст */
+      background-color: #333;
+      color: #fff;
     }
-
     /**************************************
      *   ВЕРХНИЙ БЛОК С ЗАГОЛОВКОМ И TG   *
      **************************************/
@@ -84,29 +78,33 @@
       width: 40px;
       height: 40px;
     }
-
     /*************************************************************
      *  БЛОК "ДЕЛО ЭШЛИ ДЖОНСОН" + ГОЛОСОВОЕ СООБЩЕНИЕ ВМЕСТЕ    *
      *************************************************************/
     .audio-case-block {
-      text-align: center; /* чтобы кнопка была по центру */
+      text-align: center; /* центрирование содержимого */
     }
     .audio-case-block h2 {
       font-size: 1.2rem;
       margin-bottom: 15px;
     }
     #audioPlayer {
-      display: none;      /* плеер изначально скрыт */
+      display: none;  /* плеер скрыт по умолчанию */
       margin-top: 15px;
     }
-
+    /* Кнопка для повторного прослушивания инструктажа */
+    #relistenBtn {
+      display: none;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      padding: 8px 16px;
+    }
     /*********************************************
      *   ОСНОВНОЙ КОНТЕНТ: ПОИСК + РЕЗУЛЬТАТ     *
      *********************************************/
     .main-content {
       display: none; /* скрыт до первого открытия аудио */
     }
-
     /* Поисковый блок (sticky) */
     .search-block {
       position: sticky;
@@ -120,37 +118,38 @@
       justify-content: center;
       align-items: center;
     }
-
-    /* Блок результатов */
+    /* Блок результатов - изначально скрыт */
+    .result-block {
+      display: none;
+    }
     .result-block p {
-      white-space: pre-wrap; /* чтобы переносы строк из CSV сохранились */
+      white-space: pre-wrap;
       word-wrap: break-word;
     }
   </style>
 </head>
 <body>
   <div class="page-wrapper">
-
-    <!-- Верхний блок (заголовок + кнопка TG) -->
+    <!-- Верхний блок: заголовок + кнопка Telegram -->
     <div class="block header">
-      <h1>Департамент полиции г.Риверстоун</h1>
+      <h1>Департамент полиции г. Риверстоун</h1>
       <div class="telegram-button">
         <a href="https://t.me/yourchannel" target="_blank">
           <img src="telegram-icon.png" alt="Telegram">
         </a>
       </div>
     </div>
-
-    <!-- Один блок: "Дело Эшли Джонсон" + кнопка и плеер -->
+    <!-- Блок "Дело Эшли Джонсон" с инструктажем -->
     <div class="block audio-case-block" id="audioCaseBlock">
-      <h2>ДЕЛО. Эшли Джонсон</h2>
+      <h2>Дело Эшли Джонсон</h2>
       <button id="listenBtn" class="btn">Прослушать инструктаж</button>
       <div id="audioPlayer">
         <audio id="voiceMessage" controls src="voice.mp3"></audio>
       </div>
+      <!-- Кнопка для повторного прослушивания -->
+      <button id="relistenBtn" class="btn">Слушать инструктаж снова</button>
     </div>
-
-    <!-- Основная часть: поиск + результат (появляется после открытия аудио в первый раз) -->
+    <!-- Основная часть: поиск + результат -->
     <div class="main-content" id="mainContent">
       <!-- Поисковый блок (sticky) -->
       <div class="block search-block">
@@ -159,32 +158,29 @@
           <button id="searchBtn" class="btn">Искать</button>
         </div>
       </div>
-      <!-- Результат -->
-      <div class="block result-block">
-        <p id="result">...</p>
+      <!-- Блок результата, изначально скрыт -->
+      <div class="block result-block" id="resultBlock">
+        <p id="result">Текст по результатам кода</p>
       </div>
     </div>
   </div>
-
   <script>
     let csvData = new Map();
     let isCSVLoaded = false;
     let firstCodeEntered = false;
 
-    // Кнопка, открывающая аудио
+    // Функция для показа аудио-плеера и скрытия кнопки прослушивания
+    function showAudioPlayer() {
+      document.getElementById("listenBtn").style.display = "none";
+      document.getElementById("audioPlayer").style.display = "block";
+    }
+
+    // Обработчик кнопки "Прослушать инструктаж"
     document.getElementById("listenBtn").addEventListener("click", () => {
-      const audioPlayer = document.getElementById("audioPlayer");
+      showAudioPlayer();
       const voiceMessage = document.getElementById("voiceMessage");
-      const listenBtn = document.getElementById("listenBtn");
-
-      // Скрываем кнопку и показываем плеер
-      listenBtn.style.display = "none";
-      audioPlayer.style.display = "block";
-
-      // Запускаем воспроизведение
       voiceMessage.play().catch(e => console.warn("Автовоспроизведение не поддерживается:", e));
-
-      // При первом открытии плеера показываем основную часть и грузим CSV
+      // При первом открытии аудио показываем основной контент и грузим CSV
       if (!isCSVLoaded) {
         document.getElementById("mainContent").style.display = "block";
         loadCSV();
@@ -192,7 +188,16 @@
       }
     });
 
-    // Нажатие кнопки "Искать"
+    // Обработчик кнопки "Слушать инструктаж снова"
+    document.getElementById("relistenBtn").addEventListener("click", () => {
+      // Показываем аудиоплеер и скрываем кнопку повторного прослушивания
+      document.getElementById("audioPlayer").style.display = "block";
+      document.getElementById("relistenBtn").style.display = "none";
+      const voiceMessage = document.getElementById("voiceMessage");
+      voiceMessage.play().catch(e => console.warn("Автовоспроизведение не поддерживается:", e));
+    });
+
+    // Обработчик кнопки "Искать"
     document.getElementById("searchBtn").addEventListener("click", searchCSV);
 
     // Загрузка CSV из document.csv
@@ -213,19 +218,16 @@
         });
     }
 
-    // Парсинг CSV: A (код), B (текст). Остальные столбцы игнорируем
+    // Парсинг CSV: используем только столбцы A (код) и B (текст)
     function parseCSV(text) {
       csvData.clear();
       let rows = [];
       let row = [];
       let current = "";
       let inQuotes = false;
-
       for (let i = 0; i < text.length; i++) {
         let char = text[i];
-
         if (char === '"') {
-          // Две кавычки подряд => экранированная кавычка
           if (inQuotes && i + 1 < text.length && text[i + 1] === '"') {
             current += '"';
             i++;
@@ -245,16 +247,14 @@
           current += char;
         }
       }
-      // Добавляем последнюю строку, если осталась
       if (current !== "" || row.length > 0) {
         row.push(current);
         rows.push(row);
       }
-
       rows.forEach(r => {
         if (r.length >= 2) {
-          let code = r[0].trim().toLowerCase(); // столбец A
-          let textB = r[1].trim();             // столбец B
+          let code = r[0].trim().toLowerCase();
+          let textB = r[1].trim();
           csvData.set(code, textB);
         }
       });
@@ -264,10 +264,6 @@
     function searchCSV() {
       const query = document.getElementById("query").value.trim().toLowerCase();
       const resultElement = document.getElementById("result");
-      const voiceMessage = document.getElementById("voiceMessage");
-      const audioPlayer = document.getElementById("audioPlayer");
-      const listenBtn = document.getElementById("listenBtn");
-
       if (!query) {
         resultElement.textContent = "Пожалуйста, введите код.";
         return;
@@ -276,16 +272,19 @@
         resultElement.textContent = "CSV-файл не загружен или пуст.";
         return;
       }
-
       const result = csvData.get(query) || "Информация не найдена.";
       resultElement.textContent = result;
-
-      // После первого введённого кода убираем и плеер, и кнопку
+      // Показываем блок результата, если он скрыт
+      document.getElementById("resultBlock").style.display = "block";
+      // После первого ввода кода скрываем аудио-плеер и кнопки инструктажа
       if (!firstCodeEntered) {
         firstCodeEntered = true;
-        audioPlayer.style.display = "none";
+        document.getElementById("audioPlayer").style.display = "none";
+        document.getElementById("listenBtn").style.display = "none";
+        // Показываем кнопку повторного прослушивания
+        document.getElementById("relistenBtn").style.display = "inline-block";
+        const voiceMessage = document.getElementById("voiceMessage");
         voiceMessage.pause();
-        listenBtn.style.display = "none";
       }
     }
   </script>

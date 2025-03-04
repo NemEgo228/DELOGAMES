@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Департамент полиции г.Риверстоун</title>
+  <title>Департамент полиции г. Риверстоун</title>
   <style>
     /* Сброс стилей */
     * {
@@ -88,13 +88,15 @@
     /*************************************************************
      *  БЛОК "ДЕЛО ЭШЛИ ДЖОНСОН" + ГОЛОСОВОЕ СООБЩЕНИЕ ВМЕСТЕ    *
      *************************************************************/
+    .audio-case-block {
+      text-align: center; /* чтобы кнопка была по центру */
+    }
     .audio-case-block h2 {
       font-size: 1.2rem;
       margin-bottom: 15px;
-      text-align: center;
     }
     #audioPlayer {
-      display: none;
+      display: none;      /* плеер изначально скрыт */
       margin-top: 15px;
     }
 
@@ -124,13 +126,6 @@
       white-space: pre-wrap; /* чтобы переносы строк из CSV сохранились */
       word-wrap: break-word;
     }
-    /* Картинка, вставляемая в текст */
-    .result-block img {
-      display: block;
-      max-width: 100%;
-      height: auto;
-      margin-top: 20px; /* отступ сверху */
-    }
   </style>
 </head>
 <body>
@@ -138,7 +133,7 @@
 
     <!-- Верхний блок (заголовок + кнопка TG) -->
     <div class="block header">
-      <h1>Департамент полиции г. Риверстоун</h1>
+      <h1>Департамент полиции г.Риверстоун</h1>
       <div class="telegram-button">
         <a href="https://t.me/yourchannel" target="_blank">
           <img src="telegram-icon.png" alt="Telegram">
@@ -146,10 +141,10 @@
       </div>
     </div>
 
-    <!-- Один блок: "Дело Эшли Джонсон" + голосовое сообщение -->
+    <!-- Один блок: "Дело Эшли Джонсон" + кнопка и плеер -->
     <div class="block audio-case-block" id="audioCaseBlock">
-      <h2>Дело Эшли Джонсон</h2>
-      <button id="toggleAudioBtn" class="btn">Прослушать инструктаж</button>
+      <h2>ДЕЛО. Эшли Джонсон</h2>
+      <button id="listenBtn" class="btn">Прослушать инструктаж</button>
       <div id="audioPlayer">
         <audio id="voiceMessage" controls src="voice.mp3"></audio>
       </div>
@@ -166,7 +161,7 @@
       </div>
       <!-- Результат -->
       <div class="block result-block">
-        <p id="result">Текст по результатам кода</p>
+        <p id="result">...</p>
       </div>
     </div>
   </div>
@@ -176,26 +171,24 @@
     let isCSVLoaded = false;
     let firstCodeEntered = false;
 
-    // Кнопка, открывающая/закрывающая аудио
-    document.getElementById("toggleAudioBtn").addEventListener("click", () => {
+    // Кнопка, открывающая аудио
+    document.getElementById("listenBtn").addEventListener("click", () => {
       const audioPlayer = document.getElementById("audioPlayer");
       const voiceMessage = document.getElementById("voiceMessage");
+      const listenBtn = document.getElementById("listenBtn");
 
-      // Если аудио скрыто, показываем и запускаем воспроизведение
-      if (audioPlayer.style.display === "none") {
-        audioPlayer.style.display = "block";
-        voiceMessage.play().catch(e => console.warn("Автовоспроизведение не поддерживается:", e));
+      // Скрываем кнопку и показываем плеер
+      listenBtn.style.display = "none";
+      audioPlayer.style.display = "block";
 
-        // При первом открытии — показать основной контент и загрузить CSV
-        if (!isCSVLoaded) {
-          document.getElementById("mainContent").style.display = "block";
-          loadCSV();
-          isCSVLoaded = true;
-        }
-      } else {
-        // Иначе сворачиваем и ставим на паузу
-        audioPlayer.style.display = "none";
-        voiceMessage.pause();
+      // Запускаем воспроизведение
+      voiceMessage.play().catch(e => console.warn("Автовоспроизведение не поддерживается:", e));
+
+      // При первом открытии плеера показываем основную часть и грузим CSV
+      if (!isCSVLoaded) {
+        document.getElementById("mainContent").style.display = "block";
+        loadCSV();
+        isCSVLoaded = true;
       }
     });
 
@@ -220,7 +213,7 @@
         });
     }
 
-    // Парсинг CSV: столбцы A(код), B(текст), C(файл), D(заметки, игнорируем)
+    // Парсинг CSV: A (код), B (текст). Остальные столбцы игнорируем
     function parseCSV(text) {
       csvData.clear();
       let rows = [];
@@ -260,18 +253,9 @@
 
       rows.forEach(r => {
         if (r.length >= 2) {
-          let code = r[0].trim().toLowerCase();   // столбец A
-          let textB = r[1].trim();               // столбец B
-          let fileC = (r[2] || "").trim();       // столбец C
-          // столбец D (r[3]) игнорируем
-
-          // Если в столбце C есть имя файла, добавим <img> в конец текста
-          let finalText = textB;
-          if (fileC) {
-            finalText += `\n\n<img src="${fileC}" alt="иллюстрация" />`;
-          }
-
-          csvData.set(code, finalText);
+          let code = r[0].trim().toLowerCase(); // столбец A
+          let textB = r[1].trim();             // столбец B
+          csvData.set(code, textB);
         }
       });
     }
@@ -280,6 +264,9 @@
     function searchCSV() {
       const query = document.getElementById("query").value.trim().toLowerCase();
       const resultElement = document.getElementById("result");
+      const voiceMessage = document.getElementById("voiceMessage");
+      const audioPlayer = document.getElementById("audioPlayer");
+      const listenBtn = document.getElementById("listenBtn");
 
       if (!query) {
         resultElement.textContent = "Пожалуйста, введите код.";
@@ -291,16 +278,14 @@
       }
 
       const result = csvData.get(query) || "Информация не найдена.";
-      // Покажем переносы строк и теги <img> как HTML
-      resultElement.innerHTML = result.replace(/\n/g, '<br>');
+      resultElement.textContent = result;
 
-      // После первого введённого кода сворачиваем аудио (чтобы остался только заголовок)
+      // После первого введённого кода убираем и плеер, и кнопку
       if (!firstCodeEntered) {
         firstCodeEntered = true;
-        const audioPlayer = document.getElementById("audioPlayer");
-        const voiceMessage = document.getElementById("voiceMessage");
         audioPlayer.style.display = "none";
         voiceMessage.pause();
+        listenBtn.style.display = "none";
       }
     }
   </script>

@@ -263,14 +263,17 @@
       const query = document.getElementById("query").value.trim().toLowerCase();
       const resultBlock = document.getElementById("resultBlock");
 
+      // Очищаем содержимое блока результатов при каждом поиске
+      resultBlock.innerHTML = "";
+
       if (!query) {
-        document.getElementById("result").textContent = "Пожалуйста, введите код.";
+        resultBlock.innerHTML = `<p id="result">Пожалуйста, введите код.</p>`;
+        resultBlock.style.display = "block";
         return;
       }
 
-      // Если введён код JM2 - показываем кастомное окно с голосовым сообщением
+      // Если введён код JM2 - показываем окно с голосовым сообщением
       if (query === "jm2") {
-        resultBlock.style.display = "block";
         resultBlock.innerHTML = `
           <div class="audio-case-block" id="audioCaseBlock2">
             <h2>Инструктаж №2</h2>
@@ -280,7 +283,8 @@
             </div>
           </div>
         `;
-        document.getElementById("resultBlock").scrollIntoView({ behavior: "smooth" });
+        resultBlock.style.display = "block";
+        resultBlock.scrollIntoView({ behavior: "smooth" });
         document.getElementById("listenBtn2").addEventListener("click", function() {
           this.style.display = "none";
           document.getElementById("audioPlayer2").style.display = "block";
@@ -292,11 +296,12 @@
 
       // Стандартная обработка для остальных кодов
       if (csvData.size === 0) {
-        document.getElementById("result").textContent = "CSV-файл не загружен или пуст.";
+        resultBlock.innerHTML = `<p id="result">CSV-файл не загружен или пуст.</p>`;
+        resultBlock.style.display = "block";
         return;
       }
       const result = csvData.get(query) || "Информация не найдена.";
-      document.getElementById("result").textContent = result;
+      resultBlock.innerHTML = `<p id="result">${result}</p>`;
       resultBlock.style.display = "block";
       resultBlock.scrollIntoView({ behavior: "smooth" });
 
@@ -312,4 +317,5 @@
   </script>
 </body>
 </html>
+
 

@@ -58,8 +58,8 @@
     }
 
     .input-text {
-      flex: 1;              /* чтобы занимать доступное место в .search-form */
-      min-width: 200px;     /* минимальная ширина на узких экранах */
+      flex: 1;
+      min-width: 200px;
       padding: 12px;
       border: none;
       border-radius: 20px;
@@ -129,6 +129,13 @@
     .result-block p {
       white-space: pre-wrap; /* чтобы переносы строк из CSV сохранились */
       word-wrap: break-word;
+    }
+    /* Картинка, вставляемая в текст */
+    .result-block img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin-top: 20px; /* отступ сверху */
     }
   </style>
 </head>
@@ -216,7 +223,7 @@
         });
     }
 
-    // Парсинг CSV (поддержка многострочных полей)
+    // Парсинг CSV: столбцы A (код), B (текст), C (файл-иллюстрация), D (заметки, игнорируем)
     function parseCSV(text) {
       csvData.clear();
       let rows = [];
@@ -254,12 +261,23 @@
         rows.push(row);
       }
 
-      // Первый столбец — ключ, остальные объединяем в текст
       rows.forEach(r => {
+        // Минимум 2 столбца нужно (код и текст).
+        // Если есть 3-й столбец — это файл, 4-й столбец (заметки) игнорируем.
         if (r.length >= 2) {
-          let key = r[0].trim().toLowerCase();
-          let value = r.slice(1).join(',').trim();
-          csvData.set(key, value);
+          let code = r[0].trim().toLowerCase();   // столбец A
+          let textB = r[1].trim();               // столбец B
+          let fileC = (r[2] || "").trim();       // столбец C (если нет, будет "")
+          // столбец D (r[3]) пропускаем
+
+          // Если в столбце C есть название файла, добавим <img> в конец текста
+          let finalText = textB;
+          if (fileC) {
+            finalText += `\n\n<img src="${fileC}" alt="иллюстрация" />`;
+          }
+
+          // Сохраняем результат в Map
+          csvData.set(code, finalText);
         }
       });
     }
@@ -278,8 +296,14 @@
         return;
       }
 
+      // Ищем текст по ключу (код)
       const result = csvData.get(query) || "Информация не найдена.";
       resultElement.textContent = result;
+
+      // Если в тексте есть тег <img>, мы можем его «преобразовать» (т. е. отобразить как HTML).
+      // Но по умолчанию innerText выведет теги как текст. Чтобы отобразить изображение,
+      // заменим innerText на innerHTML:
+      resultElement.innerHTML = result.replace(/\n/g, '<br>');
     }
   </script>
 </body>

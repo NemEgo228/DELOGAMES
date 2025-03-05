@@ -272,7 +272,7 @@
         return;
       }
 
-      // Если введён код JM2 - показываем окно с голосовым сообщением
+      // Если введён код JM2 - показываем окно с голосовым сообщением Инструктаж №2
       if (query === "jm2") {
         resultBlock.innerHTML = `
           <div class="audio-case-block" id="audioCaseBlock2">
@@ -290,6 +290,32 @@
           document.getElementById("audioPlayer2").style.display = "block";
           const voiceMessage2 = document.getElementById("voiceMessage2");
           voiceMessage2.play().catch(e => console.warn("Автовоспроизведение не поддерживается:", e));
+        });
+        return;
+      }
+
+      // Если введён код FINAL - показываем одновременно ГС 3 и текст из таблицы
+      if (query === "final") {
+        let csvText = csvData.size > 0 ? (csvData.get(query) || "Информация не найдена.") : "CSV-файл не загружен или пуст.";
+        resultBlock.innerHTML = `
+          <div class="audio-case-block" id="audioCaseBlock3">
+            <h2>ГС 3</h2>
+            <button id="listenBtn3" class="btn">Прослушать ГС 3</button>
+            <div id="audioPlayer3" style="display: none; margin-top: 15px;">
+              <audio id="voiceMessage3" controls src="voice3.mp3"></audio>
+            </div>
+          </div>
+          <div class="block" style="margin-top: 20px;">
+            <p id="result">${csvText}</p>
+          </div>
+        `;
+        resultBlock.style.display = "block";
+        resultBlock.scrollIntoView({ behavior: "smooth" });
+        document.getElementById("listenBtn3").addEventListener("click", function() {
+          this.style.display = "none";
+          document.getElementById("audioPlayer3").style.display = "block";
+          const voiceMessage3 = document.getElementById("voiceMessage3");
+          voiceMessage3.play().catch(e => console.warn("Автовоспроизведение не поддерживается:", e));
         });
         return;
       }
@@ -317,5 +343,6 @@
   </script>
 </body>
 </html>
+
 
 

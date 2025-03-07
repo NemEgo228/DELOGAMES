@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Департамент полиции г.Риверстоун</title>
+  <title>Департамент полиции г. Риверстоун</title>
   <style>
     /* Сброс стилей */
     * {
@@ -266,6 +266,9 @@
       // Очищаем содержимое блока результатов при каждом поиске
       resultBlock.innerHTML = "";
 
+      // Скроллим к самому верху страницы
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
       if (!query) {
         resultBlock.innerHTML = `<p id="result">Пожалуйста, введите код.</p>`;
         resultBlock.style.display = "block";
@@ -284,7 +287,6 @@
           </div>
         `;
         resultBlock.style.display = "block";
-        resultBlock.scrollIntoView({ behavior: "smooth" });
         document.getElementById("listenBtn2").addEventListener("click", function() {
           this.style.display = "none";
           document.getElementById("audioPlayer2").style.display = "block";
@@ -299,8 +301,8 @@
         let csvText = csvData.size > 0 ? (csvData.get(query) || "Информация не найдена.") : "CSV-файл не загружен или пуст.";
         resultBlock.innerHTML = `
           <div class="audio-case-block" id="audioCaseBlock3">
-            <h2>Инструктаж №3</h2>
-            <button id="listenBtn3" class="btn">Прослушать</button>
+            <h2>ГС 3</h2>
+            <button id="listenBtn3" class="btn">Прослушать ГС 3</button>
             <div id="audioPlayer3" style="display: none; margin-top: 15px;">
               <audio id="voiceMessage3" controls src="voice3.mp3"></audio>
             </div>
@@ -310,7 +312,6 @@
           </div>
         `;
         resultBlock.style.display = "block";
-        resultBlock.scrollIntoView({ behavior: "smooth" });
         document.getElementById("listenBtn3").addEventListener("click", function() {
           this.style.display = "none";
           document.getElementById("audioPlayer3").style.display = "block";
@@ -329,7 +330,6 @@
       const result = csvData.get(query) || "Информация не найдена.";
       resultBlock.innerHTML = `<p id="result">${result}</p>`;
       resultBlock.style.display = "block";
-      resultBlock.scrollIntoView({ behavior: "smooth" });
 
       if (!firstCodeEntered) {
         firstCodeEntered = true;

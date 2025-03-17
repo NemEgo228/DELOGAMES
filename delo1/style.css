@@ -1,0 +1,120 @@
+/* Общие стили */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #1e1e1e;
+  color: #fff;
+  line-height: 1.5;
+}
+
+.page-wrapper {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Стиль для блоков */
+.block {
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Кнопки */
+.btn {
+  display: inline-block;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 20px;
+  background-color: #666;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn:hover {
+  background-color: #777;
+}
+
+/* Инпут */
+.input-text {
+  flex: 1;
+  min-width: 200px;
+  padding: 12px;
+  border: none;
+  border-radius: 20px;
+  font-size: 1rem;
+  outline: none;
+  background-color: #333;
+  color: #fff;
+}
+
+/* Заголовок и Telegram-кнопка */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h1 {
+  font-size: 1.5rem;
+}
+
+.telegram-button img {
+  width: 40px;
+  height: 40px;
+}
+
+/* Блок аудио */
+.audio-case-block {
+  text-align: center;
+}
+
+.audio-case-block h2 {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+}
+
+#audioPlayer {
+  display: none;
+  margin-top: 15px;
+}
+
+#relistenBtn {
+  display: none;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+}
+
+/* Блок поиска */
+.search-block {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.result-block {
+  display: none;
+}
+
+.result-block p {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}

@@ -3,14 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Главная страница</title>
+    <title>Настольная игра ДЕЛО</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1e1e1e;
+            color: #fff;
+            text-align: center;
+            padding: 40px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .case-link {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background-color: #444;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+        .case-link:hover {
+            background-color: #666;
+        }
+        .soon {
+            background-color: #222;
+            cursor: default;
+            opacity: 0.5;
+        }
+        .soon:hover {
+            background-color: #222;
+        }
+    </style>
 </head>
 <body>
-    <h1>Добро пожаловать</h1>
-    <p>Выберите дело:</p>
-    <ul>
-        <li><a href="delo1/index.html">Дело 1</a></li>
-        <li><a href="delo2/index.html">Дело 2</a></li>
-    </ul>
+    <div class="container">
+        <h1>Добро пожаловать, детективы!</h1>
+        <p>Выберите ДЕЛО для расследования:</p>
+        <a href="delo1/index.html" class="case-link">ДЕЛО ЭШЛИ ДЖОНСОН</a>
+        <a href="#" class="case-link soon">ДЕЛО ДЖЕЙМСА КАРТЕРА (SOON)</a>
+        <a href="#" class="case-link soon">ДЕЛО ЛИЛИАН МОРРИС (SOON)</a>
+    </div>
 </body>
 </html>

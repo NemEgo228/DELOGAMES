@@ -1,5 +1,44 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head><title>Дело 1</title></head>
-<body><h1>Страница Дело 1</h1></body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Дело 1 - Департамент полиции</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="block header">
+      <h1>Департамент полиции г. Риверстоун</h1>
+      <div class="telegram-button">
+        <a href="https://t.me/+0RTsHIqL7j03Mzhi" target="_blank">
+          <img src="../telegram-icon.png" alt="Telegram">
+        </a>
+      </div>
+    </div>
+    
+    <div class="block audio-case-block" id="audioCaseBlock">
+      <h2>Дело Эшли Джонсон</h2>
+      <button id="listenBtn" class="btn">Прослушать инструктаж</button>
+      <div id="audioPlayer">
+        <audio id="voiceMessage" controls src="../voice.mp3"></audio>
+      </div>
+      <button id="relistenBtn" class="btn">Повторный инструктаж</button>
+    </div>
+    
+    <div class="main-content" id="mainContent">
+      <div class="block search-block">
+        <div class="search-form">
+          <input type="text" id="query" class="input-text" placeholder="Введите код">
+          <button id="searchBtn" class="btn">Искать</button>
+        </div>
+      </div>
+      <div class="block result-block" id="resultBlock">
+        <p id="result">Текст по результатам кода</p>
+      </div>
+    </div>
+  </div>
+  
+  <script src="script.js"></script>
+</body>
 </html>

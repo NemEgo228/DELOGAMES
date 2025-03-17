@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("searchBtn").addEventListener("click", searchCSV);
 
     function loadCSV() {
-        fetch('../document.csv')
+        fetch('document.csv')
             .then(response => {
                 if (!response.ok) {
                     throw new Error("Не удалось загрузить CSV-файл");

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Департамент полиции г. Риверстоун</title>
+  <style>
+    /* Сброс стилей */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-size: cover;
+      background-position: center;
+      background-color: #1e1e1e; /* запасной цвет */
+      color: #fff;
+      line-height: 1.5;
+    }
+    .page-wrapper {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    /**********************************************
+     *  ЕДИНЫЙ СТИЛЬ ДЛЯ ПОЛУПРОЗРАЧНЫХ БЛОКОВ   *
+     **********************************************/
+    .block {
+      background: rgba(0, 0, 0, 0.8); /* более тёмная подложка */
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+    /***********************************
+     *   СТИЛИ ДЛЯ КНОПОК И ПОЛЕЙ     *
+     ***********************************/
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 20px;
+      background-color: #666;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .btn:hover {
+      background-color: #777;
+    }
+    .input-text {
+      flex: 1;
+      min-width: 200px;
+      padding: 12px;
+      border: none;
+      border-radius: 20px;
+      font-size: 1rem;
+      outline: none;
+      background-color: #333;
+      color: #fff;
+    }
+    /**************************************
+     *   ВЕРХНИЙ БЛОК С ЗАГОЛОВКОМ И TG   *
+     **************************************/
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header h1 {
+      font-size: 1.5rem;
+    }
+    .telegram-button img {
+      width: 40px;
+      height: 40px;
+    }
+    /*************************************************************
+     *  БЛОК "ДЕЛО ЭШЛИ ДЖОНСОН" + ГОЛОСОВОЕ СООБЩЕНИЕ ВМЕСТЕ    *
+     *************************************************************/
+    .audio-case-block {
+      text-align: center; /* центрирование содержимого */
+    }
+    .audio-case-block h2 {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+    }
+    #audioPlayer {
+      display: none;  /* плеер скрыт по умолчанию */
+      margin-top: 15px;
+    }
+    /* Кнопка для повторного прослушивания инструктажа */
+    #relistenBtn {
+      display: none;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      padding: 8px 16px;
+    }
+    /*********************************************
+     *   ОСНОВНОЙ КОНТЕНТ: ПОИСК + РЕЗУЛЬТАТ     *
+     *********************************************/
+    .main-content {
+      display: none; /* скрыт до первого открытия аудио */
+    }
+    /* Поисковый блок (sticky) */
+    .search-block {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+    .search-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+    }
+    /* Блок результатов - изначально скрыт */
+    .result-block {
+      display: none;
+    }
+    .result-block p {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- Верхний блок: заголовок + кнопка Telegram -->
+    <div class="block header">
+      <h1>Департамент полиции г. Риверстоун</h1>
+      <div class="telegram-button">
+        <a href="https://t.me/+0RTsHIqL7j03Mzhi" target="_blank">
+          <img src="telegram-icon.png" alt="Telegram">
+        </a>
+      </div>
+    </div>
+    <!-- Блок "Дело Эшли Джонсон" с инструктажем -->
+    <div class="block audio-case-block" id="audioCaseBlock">
+      <h2>Дело Эшли Джонсон</h2>
+      <button id="listenBtn" class="btn">Прослушать инструктаж</button>
+      <div id="audioPlayer">
+        <audio id="voiceMessage" controls src="voice.mp3"></audio>
+      </div>
+      <!-- Кнопка для повторного прослушивания -->
+      <button id="relistenBtn" class="btn">Повторный инструктаж</button>
+    </div>
+    <!-- Основная часть: поиск + результат -->
+    <div class="main-content" id="mainContent">
+      <!-- Поисковый блок (sticky) -->
+      <div class="block search-block">
+        <div class="search-form">
+          <input type="text" id="query" class="input-text" placeholder="Введите код">
+          <button id="searchBtn" class="btn">Искать</button>
+        </div>
+      </div>
+      <!-- Блок результата, изначально скрыт -->
+      <div class="block result-block" id="resultBlock">
+        <p id="result">Текст по результатам кода</p>
+      </div>
+    </div>
+  </div>
+  <script>
+    let csvData = new Map();
+    let isCSVLoaded = false;
+    let firstCodeEntered = false;
+
+    // Функция для показа аудио-плеера и скрытия кнопки прослушивания
+    function showAudioPlayer() {
+      document.getElementById("listenBtn").style.display = "none";
+      document.getElementById("audioPlayer").style.display = "block";
+    }
+
+    // Обработчик кнопки "Прослушать инструктаж"
+    document.getElementById("listenBtn").addEventListener("click", () => {
+      showAudioPlayer();
+      const voiceMessage = document.getElementById("voiceMessage");
+      voiceMessage.play().catch(e => console.warn("Автовоспроизведение не поддерживается:", e));
+      // При первом открытии аудио показываем основной контент и грузим CSV
+      if (!isCSVLoaded) {
+        document.getElementById("mainContent").style.display = "block";
+        loadCSV();
+        isCSVLoaded = true;
+      }
+    });
+
+    // Обработчик кнопки "Слушать инструктаж снова"
+    document.getElementById("relistenBtn").addEventListener("click", () => {
+      document.getElementById("audioPlayer").style.display = "block";
+      document.getElementById("relistenBtn").style.display = "none";
+      const voiceMessage = document.getElementById("voiceMessage");
+      voiceMessage.play().catch(e => console.warn("Автовоспроизведение не поддерживается:", e));
+    });
+
+    // Обработчик кнопки "Искать"
+    document.getElementById("searchBtn").addEventListener("click", searchCSV);
+
+    // Загрузка CSV из document.csv
+    function loadCSV() {
+      fetch('document.csv')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Не удалось загрузить CSV-файл");
+          }
+          return response.text();
+        })
+        .then(text => {
+          parseCSV(text);
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById("result").textContent = "Ошибка загрузки document.csv";
+        });
+    }
+
+    // Парсинг CSV: используем только столбцы A (код) и B (текст)
+    function parseCSV(text) {
+      csvData.clear();
+      let rows = [];
+      let row = [];
+      let current = "";
+      let inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        let char = text[i];
+        if (char === '"') {
+          if (inQuotes && i + 1 < text.length && text[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === ',' && !inQuotes) {
+          row.push(current);
+          current = "";
+        } else if ((char === '\n' || char === '\r') && !inQuotes) {
+          if (char === '\r' && text[i + 1] === '\n') i++;
+          row.push(current);
+          rows.push(row);
+          row = [];
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+      if (current !== "" || row.length > 0) {
+        row.push(current);
+        rows.push(row);
+      }
+      rows.forEach(r => {
+        if (r.length >= 2) {
+          let code = r[0].trim().toLowerCase();
+          let textB = r[1].trim();
+          csvData.set(code, textB);
+        }
+      });
+    }
+
+    // Поиск по коду
+    function searchCSV() {
+      const query = document.getElementById("query").value.trim().toLowerCase();
+      const resultBlock = document.getElementById("resultBlock");
+
+      // Очищаем содержимое блока результатов при каждом поиске
+      resultBlock.innerHTML = "";
+
+      // Скроллим к самому верху страницы
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      if (!query) {
+        resultBlock.innerHTML = `<p id="result">Пожалуйста, введите код.</p>`;
+        resultBlock.style.display = "block";
+        return;
+      }
+
+      // Если введён код JM2 - показываем окно с голосовым сообщением Инструктаж №2
+      if (query === "jm2") {
+        resultBlock.innerHTML = `
+          <div class="audio-case-block" id="audioCaseBlock2">
+            <h2>Инструктаж №2</h2>
+            <button id="listenBtn2" class="btn">Прослушать инструктаж №2</button>
+            <div id="audioPlayer2" style="display: none; margin-top: 15px;">
+              <audio id="voiceMessage2" controls src="voice2.mp3"></audio>
+            </div>
+          </div>
+        `;
+        resultBlock.style.display = "block";
+        document.getElementById("listenBtn2").addEventListener("click", function() {
+          this.style.display = "none";
+          document.getElementById("audioPlayer2").style.display = "block";
+          const voiceMessage2 = document.getElementById("voiceMessage2");
+          voiceMessage2.play().catch(e => console.warn("Автовоспроизведение не поддерживается:", e));
+        });
+        return;
+      }
+
+      // Если введён код FINAL - показываем одновременно ГС 3 и текст из таблицы
+      if (query === "final") {
+        let csvText = csvData.size > 0 ? (csvData.get(query) || "Информация не найдена.") : "CSV-файл не загружен или пуст.";
+        resultBlock.innerHTML = `
+          <div class="audio-case-block" id="audioCaseBlock3">
+            <h2>ГС 3</h2>
+            <button id="listenBtn3" class="btn">Прослушать ГС 3</button>
+            <div id="audioPlayer3" style="display: none; margin-top: 15px;">
+              <audio id="voiceMessage3" controls src="voice3.mp3"></audio>
+            </div>
+          </div>
+          <div class="block" style="margin-top: 20px;">
+            <p id="result">${csvText}</p>
+          </div>
+        `;
+        resultBlock.style.display = "block";
+        document.getElementById("listenBtn3").addEventListener("click", function() {
+          this.style.display = "none";
+          document.getElementById("audioPlayer3").style.display = "block";
+          const voiceMessage3 = document.getElementById("voiceMessage3");
+          voiceMessage3.play().catch(e => console.warn("Автовоспроизведение не поддерживается:", e));
+        });
+        return;
+      }
+
+      // Стандартная обработка для остальных кодов
+      if (csvData.size === 0) {
+        resultBlock.innerHTML = `<p id="result">CSV-файл не загружен или пуст.</p>`;
+        resultBlock.style.display = "block";
+        return;
+      }
+      const result = csvData.get(query) || "Информация не найдена.";
+      resultBlock.innerHTML = `<p id="result">${result}</p>`;
+      resultBlock.style.display = "block";
+
+      if (!firstCodeEntered) {
+        firstCodeEntered = true;
+        document.getElementById("audioPlayer").style.display = "none";
+        document.getElementById("listenBtn").style.display = "none";
+        document.getElementById("relistenBtn").style.display = "inline-block";
+        const voiceMessage = document.getElementById("voiceMessage");
+        voiceMessage.pause();
+      }
+    }
+  </script>
+</body>
+</html>
+
+
+
